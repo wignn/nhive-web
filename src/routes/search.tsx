@@ -1,7 +1,5 @@
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { searchNovels, autocompleteNovels } from "@/server/novels.functions";
 import { Search, SearchX } from "lucide-react";
 import { z } from "zod";
 import { LineSkeleton } from "@/components/ui-bits/Skeletons";
@@ -25,8 +23,17 @@ function SearchPage() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(!!initial);
-  const search = useServerFn(searchNovels);
-  const ac = useServerFn(autocompleteNovels);
+  const searchApi = async (val: string) => {
+    const res = await fetch(`/api/v1/search?q=${encodeURIComponent(val)}`);
+    if (!res.ok) throw new Error("Search failed");
+    return res.json();
+  };
+
+  const autocompleteApi = async (val: string) => {
+    const res = await fetch(`/api/v1/search/autocomplete?q=${encodeURIComponent(val)}`);
+    if (!res.ok) throw new Error("Autocomplete failed");
+    return res.json();
+  };
 
   useEffect(() => {
     if (initial) doSearch(initial);
@@ -39,7 +46,7 @@ function SearchPage() {
     setSearched(true);
     setSuggestions([]);
     try {
-      const d: any = await search({ data: { q: val } });
+      const d: any = await searchApi(val);
       setResults(d?.hits || d?.novels || []);
     } catch {
       setResults([]);
@@ -52,7 +59,7 @@ function SearchPage() {
     setQ(val);
     if (val.length >= 2) {
       try {
-        const d: any = await ac({ data: { q: val } });
+        const d: any = await autocompleteApi(val);
         setSuggestions(d?.suggestions || []);
       } catch {
         setSuggestions([]);
