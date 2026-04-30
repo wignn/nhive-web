@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getNovel, listChapters, getLibrary, addToLibrary, removeFromLibrary } from "@/server/novels.functions";
+import { getNovel, listChapters, getLibrary, addToLibrary, removeFromLibrary } from "@/server-fns/novels.functions";
 import { buildCoverUrl, classNames, formatCount } from "@/lib/novel-utils";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "@/lib/toast";

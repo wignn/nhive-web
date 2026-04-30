@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { login } from "@/server/auth.functions";
+import { login } from "@/server-fns/auth.functions";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "@/lib/toast";
 import { Loader2, LogIn, Sparkles } from "lucide-react";

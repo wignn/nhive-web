@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { register } from "@/server/auth.functions";
+import { register } from "@/server-fns/auth.functions";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "@/lib/toast";
 import { Loader2, UserPlus } from "lucide-react";

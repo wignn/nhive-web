@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
-import { getLibrary, listNovels } from "@/server/novels.functions";
+import { getLibrary, listNovels } from "@/server-fns/novels.functions";
 import { BookOpen, CheckCircle2, ClipboardList, Library, XCircle } from "lucide-react";
 import { classNames } from "@/lib/novel-utils";
 

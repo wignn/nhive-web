@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { listNovels } from "@/server/novels.functions";
+import { listNovels } from "@/server-fns/novels.functions";
 import { NovelCard, type Novel } from "@/components/novel/NovelCard";
 import { CardGridSkeleton } from "@/components/ui-bits/Skeletons";
 import { buildCoverUrl, formatCount } from "@/lib/novel-utils";

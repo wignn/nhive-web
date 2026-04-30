@@ -2,7 +2,7 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
-import { autocompleteNovels } from "@/server/novels.functions";
+import { autocompleteNovels } from "@/server-fns/novels.functions";
 import { Search, BookOpen, Library, Shield, LogOut, Menu, X, Sparkles, ChevronDown } from "lucide-react";
 import { classNames } from "@/lib/novel-utils";
 import logoImg from "@/assets/logo.ico";

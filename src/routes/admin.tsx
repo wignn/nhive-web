@@ -8,7 +8,7 @@ import {
   adminCreateNovel, adminUpdateNovel, adminDeleteNovel,
   adminCreateChapter, adminUpdateChapter, adminDeleteChapter,
   adminSetUserRole,
-} from "@/server/admin.functions";
+} from "@/server-fns/admin.functions";
 import { buildCoverUrl, classNames } from "@/lib/novel-utils";
 import {
   BookOpen, FileText, Globe, Loader2, Pencil, Plus, Shield,

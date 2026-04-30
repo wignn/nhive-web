@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { gatewayFetch } from "@/server/gateway.server";
-import { getSession } from "@/server/session";
+import { gatewayFetch } from "@/server-fns/gateway.server";
+import { getSession } from "@/server-fns/session";
 
 export const Route = createFileRoute("/api/admin/upload")({
   server: {

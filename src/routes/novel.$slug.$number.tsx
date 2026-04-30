@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { readChapter, listChapterComments, postComment } from "@/server/novels.functions";
+import { readChapter, listChapterComments, postComment } from "@/server-fns/novels.functions";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "@/lib/toast";
 import { ArrowLeft, ArrowRight, Heart, List, MessageSquare, Settings, Type, X } from "lucide-react";

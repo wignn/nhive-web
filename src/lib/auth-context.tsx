@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getCurrentUser, logout as logoutFn } from "@/server/auth.functions";
+import { getCurrentUser, logout as logoutFn } from "@/server-fns/auth.functions";
 
 type User = { id: string; username: string; email: string; role: string } | null;
 
