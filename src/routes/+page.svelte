@@ -12,10 +12,24 @@
 
   let hero = $derived(trending[0] || novels[0]);
   let heroCover = $derived(hero ? buildCoverUrl(hero.cover_url, coverBase) : null);
+
+  let coverOrigin = $derived(() => {
+    try {
+      if (coverBase) return new URL(coverBase).origin;
+      if (heroCover) return new URL(heroCover).origin;
+    } catch {
+      // ignore invalid URLs
+    }
+    return null;
+  });
 </script>
 
 <svelte:head>
   <title>NovelHive — Discover your next obsession</title>
+  {#if coverOrigin}
+    <link rel="preconnect" href={coverOrigin} crossorigin />
+    <link rel="dns-prefetch" href={coverOrigin} />
+  {/if}
 </svelte:head>
 
 <main class="mx-auto w-full max-w-[1600px] px-4 md:px-6 2xl:px-8">
@@ -57,7 +71,16 @@
           <div class="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] gap-3 sm:gap-4 overflow-hidden rounded-2xl border border-white/10 bg-card/70 p-3 backdrop-blur md:grid-cols-[180px_1fr]">
             <div class="cover-frame rounded-xl ring-1 ring-white/10">
               {#if heroCover}
-                <img src={heroCover} alt={hero.title} class="absolute inset-0 h-full w-full object-cover" />
+                <img
+                  src={heroCover}
+                  alt={hero.title}
+                  loading="eager"
+                  decoding="async"
+                  fetchpriority="high"
+                  width="360"
+                  height="540"
+                  class="absolute inset-0 h-full w-full object-cover"
+                />
               {:else}
                 <div class="absolute inset-0 grid place-items-center text-muted-foreground/40"><BookOpen class="h-6 w-6 sm:h-8 sm:w-8" /></div>
               {/if}
@@ -87,7 +110,6 @@
     </div>
   </section>
 
-  <!-- TRENDING marquee strip -->
   {#if trending.length > 0}
     <section class="mt-10">
       <div class="flex items-end justify-between gap-3">

@@ -12,25 +12,22 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		gatewayFetch(`/api/v1/novels/${slug}/chapters`)
 	];
 
-	if (locals.token) {
-		tasks.push(gatewayFetch(`/api/v1/library`, { token: locals.token }).catch(() => null));
-	}
-
 	try {
-		const [n, c, lib] = await Promise.all(tasks);
+		const [n, c] = await Promise.all(tasks);
 
 		const novelData = n.novel || n;
 		let libEntry = null;
 
-		if (lib && novelData?.id) {
-			const list: any[] = Array.isArray(lib) ? lib : lib?.entries ?? [];
-			libEntry = list.find((e) => normalize(e.novel_id) === normalize(novelData.id)) ?? null;
-			if (libEntry && locals.token) {
-				try {
-					const p = await gatewayFetch(`/api/v1/progress/${novelData.id}`, { token: locals.token });
-					libEntry.progress = p?.chapter_number || 0;
-				} catch (e) {}
-			}
+		if (locals.token && novelData?.id) {
+			try {
+				const r = await gatewayFetch(`/api/v1/library/${novelData.id}`, { token: locals.token });
+				if (r?.in_library && r?.entry) {
+					libEntry = {
+						...r.entry,
+						progress: r?.progress ?? 0
+					};
+				}
+			} catch (e) {}
 		}
 
 		return {

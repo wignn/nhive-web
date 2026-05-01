@@ -22,13 +22,21 @@
   let text = $state("");
   let posting = $state(false);
 
+  let paragraphs = $derived(data.paragraphs || []);
+
   $effect(() => {
     let timeout: ReturnType<typeof setTimeout>;
     let lastSaved = -1;
+    let raf = 0;
 
     function handleScroll() {
-      const h = document.documentElement.scrollHeight - window.innerHeight;
-      progress = h > 0 ? Math.min(100, (window.scrollY / h) * 100) : 0;
+      if (!raf) {
+        raf = requestAnimationFrame(() => {
+          raf = 0;
+          const h = document.documentElement.scrollHeight - window.innerHeight;
+          progress = h > 0 ? Math.min(100, (window.scrollY / h) * 100) : 0;
+        });
+      }
 
       clearTimeout(timeout);
       timeout = setTimeout(() => {
@@ -50,6 +58,7 @@
     return () => {
       window.removeEventListener("scroll", handleScroll);
       clearTimeout(timeout);
+      if (raf) cancelAnimationFrame(raf);
     };
   });
 
@@ -93,14 +102,14 @@
         <div class="text-xs font-bold uppercase tracking-widest text-brand">Chapter {chapter.number}</div>
         <h1 class="mt-2 font-display text-3xl font-extrabold md:text-4xl">{chapter.title}</h1>
         <div class="mt-2 text-xs text-muted-foreground">{chapter.word_count} words</div>
-        <div class="mx-auto mt-6 h-px w-32 bg-gradient-to-r from-transparent via-brand/60 to-transparent"></div>
+        <div class="mx-auto mt-6 h-px w-32 bg-linear-to-r from-transparent via-brand/60 to-transparent"></div>
       </div>
 
       <div
         class="reader-prose mt-10 leading-relaxed text-foreground"
         style="font-size: {fontSize}px; font-family: var(--font-serif)"
       >
-        {#each String(chapter.content || "").split(/\n\n+/) as p}
+        {#each paragraphs as p}
           <p>{p}</p>
         {/each}
       </div>
@@ -137,7 +146,7 @@
         <h2 class="mb-4 inline-flex items-center gap-2 font-display text-xl font-extrabold">
           <MessageSquare class="h-5 w-5 text-brand" /> Comments ({comments.length})
         </h2>
-        <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <div class="rounded-2xl border border-white/10 bg-white/3 p-4">
           <form
             method="POST"
             action="?/postComment"

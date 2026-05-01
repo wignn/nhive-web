@@ -16,16 +16,20 @@ export const load: PageServerLoad = async ({ params }) => {
 	let comments = [];
 	if (chapter && chapter.id) {
 		try {
-			const c = await gatewayFetch(`/api/v1/comments/chapter/${chapter.id}`);
+			const c = await gatewayFetch(`/api/v1/chapters/${chapter.id}/comments`);
 			comments = c.comments || [];
 		} catch (e) {
 			// ignore comment fetch error
 		}
 	}
+
+	const content = String(chapter?.content || '');
+	const paragraphs = content ? content.split(/\n\n+/) : [];
 	
 	return {
 		chapter,
-		comments
+		comments,
+		paragraphs
 	};
 };
 
@@ -42,9 +46,9 @@ export const actions: Actions = {
 		}
 
 		try {
-			await gatewayFetch(`/api/v1/comments`, {
+			await gatewayFetch(`/api/v1/chapters/${chapterId}/comments`, {
 				method: 'POST',
-				body: JSON.stringify({ chapter_id: chapterId, content: content.trim() }),
+				body: JSON.stringify({ content: content.trim() }),
 				token: locals.token
 			});
 			return { success: true };

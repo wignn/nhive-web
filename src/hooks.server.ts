@@ -1,6 +1,20 @@
 import type { Handle } from '@sveltejs/kit';
 import { gatewayFetch } from '$lib/server/gateway';
 
+function applyCacheHeaders(response: Response, pathname: string): Response {
+
+	if (pathname.startsWith('/_app/immutable/')) {
+		response.headers.set('cache-control', 'public, max-age=31536000, immutable');
+		return response;
+	}
+
+	if (/\.(?:css|js|mjs|map|svg|png|jpe?g|webp|avif|ico|woff2?)$/i.test(pathname) && response.headers.get('cache-control') == null) {
+		response.headers.set('cache-control', 'public, max-age=86400');
+	}
+
+	return response;
+}
+
 function isTokenExpired(token: string): boolean {
 	try {
 		const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'));
@@ -39,14 +53,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 						} catch {
 							// Refresh failed — clear session, user must re-login
 							event.cookies.delete('novelhive_session', { path: '/' });
-							const response = await resolve(event);
-							return response;
+							return applyCacheHeaders(await resolve(event), event.url.pathname);
 						}
 					} else {
 						// Refresh token also expired — clear session
 						event.cookies.delete('novelhive_session', { path: '/' });
-						const response = await resolve(event);
-						return response;
+						return applyCacheHeaders(await resolve(event), event.url.pathname);
 					}
 				}
 
@@ -77,6 +89,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	const response = await resolve(event);
-	return response;
+	return applyCacheHeaders(await resolve(event), event.url.pathname);
 };

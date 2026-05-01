@@ -30,6 +30,9 @@
         src={cover}
         alt={novel.title}
         loading="lazy"
+        decoding="async"
+        width="200"
+        height="300"
         class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
       />
     {:else}

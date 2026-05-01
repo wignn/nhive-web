@@ -29,7 +29,15 @@
           <td class="p-3">
             <div class="h-14 w-10 overflow-hidden rounded-md bg-white/5">
               {#if n.cover_url}
-                <img src={buildCoverUrl(n.cover_url, adminStore.coverBase) || ""} class="h-full w-full object-cover" alt="Cover" />
+                <img
+                  src={buildCoverUrl(n.cover_url, adminStore.coverBase) || ""}
+                  loading="lazy"
+                  decoding="async"
+                  width="80"
+                  height="120"
+                  class="h-full w-full object-cover"
+                  alt="Cover"
+                />
               {/if}
             </div>
           </td>

@@ -45,7 +45,16 @@
       <div class="mx-auto w-44 md:mx-0 md:w-full">
         <div class="cover-frame rounded-2xl shadow-elevated ring-1 ring-white/10">
           {#if cover}
-            <img src={cover} alt={novel.title} class="absolute inset-0 h-full w-full object-cover" />
+            <img
+              src={cover}
+              alt={novel.title}
+              loading="eager"
+              decoding="async"
+              fetchpriority="high"
+              width="520"
+              height="780"
+              class="absolute inset-0 h-full w-full object-cover"
+            />
           {:else}
             <div class="absolute inset-0 grid place-items-center text-muted-foreground/40">
               <BookOpen class="h-14 w-14" />
