@@ -31,6 +31,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				return json(await gatewayFetch(`/api/v1/admin/chapters/${payload.id}`, { method: 'DELETE', token: locals.token }));
 			case 'setUserRole':
 				return json(await gatewayFetch(`/api/v1/admin/users/${payload.id}/role`, { method: 'PUT', body: JSON.stringify({ role: payload.role }), token: locals.token }));
+			case 'listGenres':
+				return json(await gatewayFetch('/api/v1/admin/genres', { token: locals.token }));
+			case 'createGenre':
+				return json(await gatewayFetch('/api/v1/admin/genres', { method: 'POST', body: JSON.stringify(payload), token: locals.token }));
+			case 'deleteGenre':
+				return json(await gatewayFetch(`/api/v1/admin/genres/${payload.id}`, { method: 'DELETE', token: locals.token }));
 			default:
 				return json({ error: 'Unknown action' }, { status: 400 });
 		}

@@ -6,10 +6,8 @@
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   
-  const GENRES = [
-    "Fantasy","Action","Romance","Adventure","Sci-Fi","Mystery","Horror",
-    "Comedy","Drama","Slice of Life","Martial Arts","Isekai","Wuxia","Xianxia",
-  ];
+  let genres = $state<any[]>([]);
+  let fGenreName = $state("");
   
   type Tab = "novels" | "chapters" | "genres" | "users";
 
@@ -47,6 +45,9 @@
       } else if (tab === "chapters") {
         const d = await rpc("listChapters");
         chapters = (d.chapters || []).map((c: any) => ({ ...(c.Chapter || c), novel_title: c.NovelTitle || c.novel_title }));
+      } else if (tab === "genres") {
+        const d = await rpc("listGenres");
+        genres = d.genres || [];
       } else if (tab === "users") {
         const d = await rpc("listUsers");
         users = d.users || [];
@@ -69,6 +70,11 @@
         if (d.cover_base_url) coverBase = d.cover_base_url;
       }).catch(() => {});
     }
+    if (user?.role === "admin" && genres.length === 0) {
+      rpc("listGenres").then((d: any) => {
+        genres = d.genres || [];
+      }).catch(() => {});
+    }
   });
 
   if (user && user.role !== "admin") {
@@ -78,7 +84,7 @@
   const stats = $derived([
     { label: "Novels", value: novels.length, icon: BookOpen },
     { label: "Chapters", value: chapters.length, icon: FileText },
-    { label: "Genres", value: GENRES.length, icon: Tags },
+    { label: "Genres", value: genres.length, icon: Tags },
     { label: "Users", value: users.length, icon: Users },
   ]);
 
@@ -330,9 +336,32 @@
         {/if}
 
         {#if tab === "genres"}
+          <div class="mb-4">
+            <form class="flex gap-2" onsubmit={(e) => {
+              e.preventDefault();
+              if (!fGenreName) return;
+              rpc("createGenre", { name: fGenreName }).then(() => {
+                fGenreName = "";
+                toast.success("Genre created");
+                reload();
+              }).catch((err: any) => toast.error(err.message));
+            }}>
+              <input bind:value={fGenreName} placeholder="New genre name..." class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30" />
+              <button type="submit" class="rounded-xl gradient-brand px-4 py-2 text-sm font-bold text-white shadow-glow whitespace-nowrap">Create Genre</button>
+            </form>
+          </div>
           <div class="flex flex-wrap gap-2 rounded-2xl border border-white/5 bg-card/60 p-4">
-            {#each GENRES as g}
-              <span class="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold">{g}</span>
+            {#each genres as g}
+              <span class="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 pl-3 pr-1 py-1 text-xs font-semibold">
+                {g.name}
+                <button onclick={() => {
+                  if (!confirm(`Delete genre: ${g.name}?`)) return;
+                  rpc("deleteGenre", { id: g.id }).then(() => {
+                    toast.success("Deleted");
+                    reload();
+                  }).catch((err: any) => toast.error(err.message));
+                }} class="rounded px-1.5 py-1 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"><X class="h-3.5 w-3.5"/></button>
+              </span>
             {/each}
           </div>
         {/if}
@@ -434,7 +463,8 @@
             <div class="mt-3">
               <label class="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Genres</label>
               <div class="flex flex-wrap gap-1.5">
-                {#each GENRES as g}
+                {#each genres as gObj}
+                  {@const g = gObj.name}
                   {@const on = fGenres.includes(g)}
                   <button
                     type="button"
