@@ -47,8 +47,8 @@ export const actions: Actions = {
 
 		const data = await request.formData();
 		const novelId = data.get('novelId')?.toString();
-		const action = data.get('action')?.toString(); // 'add' or 'remove'
-
+		const action = data.get('action')?.toString(); 
+		
 		if (!novelId) return fail(400, { error: 'Missing novel ID' });
 
 		try {

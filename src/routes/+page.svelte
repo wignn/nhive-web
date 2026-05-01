@@ -18,7 +18,7 @@
       if (coverBase) return new URL(coverBase).origin;
       if (heroCover) return new URL(heroCover).origin;
     } catch {
-      // ignore invalid URLs
+      
     }
     return null;
   });
@@ -123,7 +123,7 @@
           View all <ArrowRight class="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
         </a>
       </div>
-      <div class=" mt-3 overflow-hidden md:-mx-6">
+      <div class=" mt-3 overflow-hidden xl:mx-1 md:-mx-6">
         <div class="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:gap-5 md:px-6">
           {#each trending as n, i}
             <div class="snap-start shrink-0 w-[140px] sm:w-[160px] md:w-[180px]">

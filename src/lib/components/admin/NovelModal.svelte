@@ -14,8 +14,8 @@
     adminStore.uploading = true;
     try {
       const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/v1/upload", {
+      formData.append("image", file);
+      const res = await fetch("/api/admin/upload", {
         method: "POST",
         body: formData,
      });

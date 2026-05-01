@@ -15,7 +15,6 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		const gatewayUrl = env.NOVELHIVE_GATEWAY_URL || 'http://localhost:8080';
 		const internalKey = env.NOVELHIVE_INTERNAL_KEY || 'dev-internal-key';
 
-		// Forward form data to gateway
 		const body = new FormData();
 		body.append('image', image);
 
@@ -34,7 +33,10 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		}
 
 		const data = await res.json();
-		return json(data);
+		const baseUrl = (data.base_url || '').replace(/\/$/, '');
+		const path = (data.path || '').replace(/^\//, '');
+		const url = baseUrl && path ? `${baseUrl}/${path}` : path;
+		return json({ path: data.path, url });
 	} catch (e: any) {
 		return json({ error: e.message || 'Upload failed' }, { status: 500 });
 	}
