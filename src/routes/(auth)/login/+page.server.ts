@@ -18,6 +18,7 @@ export const actions = {
 				method: 'POST',
 				body: JSON.stringify({ email, password })
 			});
+			console.log(resp);
 
 			const accessToken = resp?.access_token;
 			const refreshToken = resp?.refresh_token;

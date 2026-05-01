@@ -5,6 +5,7 @@
 	
 	import SiteHeader from '$lib/components/layout/SiteHeader.svelte';
 	import SiteFooter from '$lib/components/layout/SiteFooter.svelte';
+	import ConfirmModal from '$lib/components/ConfirmModal.svelte';
 
 	let { children } = $props();
 
@@ -22,3 +23,4 @@
 </div>
 
 <Toaster richColors position="top-center" theme="dark" />
+<ConfirmModal />

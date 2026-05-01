@@ -6,9 +6,9 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.token || locals.user?.role !== 'admin') {
 		return json({ error: 'Unauthorized' }, { status: 401 });
 	}
+	
 
 	const { action, payload } = await request.json();
-
 	try {
 		switch (action) {
 			case 'listNovels':

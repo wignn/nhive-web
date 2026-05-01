@@ -22,7 +22,6 @@ export const handle: Handle = async ({ event, resolve }) => {
 				let refreshToken = sessionData.refreshToken;
 				let needsCookieUpdate = false;
 
-				// Check if access token is expired
 				if (isTokenExpired(accessToken)) {
 					if (refreshToken && !isTokenExpired(refreshToken)) {
 						try {

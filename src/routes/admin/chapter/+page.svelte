@@ -1,300 +1,114 @@
 <script lang="ts">
   import { cn } from "$lib/utils";
-  import {
-    ArrowLeft,
-    BookOpen,
-    Loader2,
-    Save,
-    Send,
-  } from "lucide-svelte";
+  import { ArrowLeft, BookOpen, Loader2, Save, Send } from "lucide-svelte";
   import ChapterEditor from "$lib/components/ChapterEditor.svelte";
-  import { toast } from "svelte-sonner";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
+  import { chapterEditorStore } from "$lib/state/chapterEditor.svelte";
+  import { onMount } from "svelte";
 
   let user = $derived($page.data.user);
-
   let params = $derived(new URL($page.url).searchParams);
   let editId = $derived(params.get("id") || "");
   let presetNovelId = $derived(params.get("novel_id") || "");
+  let novelSlug = $derived(params.get("novel_slug"));
+  let chapterNumber = $derived(params.get("number"));
 
-  let novels = $state<any[]>([]);
-  let loading = $state(true);
-  let saving = $state(false);
-  let editing = $state<any>(null);
-
-  let fNovelId = $state("");
-  let fNumber = $state(1);
-  let fTitle = $state("");
-  let fContent = $state("");
-
-  let wordCount = $derived(
-    fContent
-      .trim()
-      .split(/\s+/)
-      .filter((w) => w.length > 0).length
-  );
-
-  async function rpc(action: string, payload: any = {}) {
-    const res = await fetch("/api/admin/rpc", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, payload }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Action failed");
-    return data;
-  }
-
-  async function init() {
+  onMount(() => {
     if (!user || user.role !== "admin") {
       goto("/");
       return;
     }
-    loading = true;
-    try {
-      const d = await rpc("listNovels");
-      novels = d.novels || [];
-
-      const novelSlug = params.get("novel_slug");
-      const chapterNumber = params.get("number");
-
-      if (novelSlug && chapterNumber) {
-        try {
-          const ch = await rpc("getChapter", { novel_slug: novelSlug, number: chapterNumber });
-          editing = ch;
-          fNovelId = ch.novel_id || "";
-          fNumber = ch.number || 1;
-          fTitle = ch.title || "";
-          fContent = ch.content || "";
-        } catch (err) {
-          toast.error("Failed to load full chapter content");
-        }
-      } else if (editId) {
-        const chaptersData = await rpc("listChapters");
-        const chapters = (chaptersData.chapters || []).map((c: any) => ({
-          ...(c.Chapter || c.chapter || c),
-          novel_title: c.NovelTitle || c.novel_title,
-        }));
-        const ch = chapters.find((c: any) => c.id === editId);
-        if (ch) {
-          editing = ch;
-          fNovelId = ch.novel_id || "";
-          fNumber = ch.number || 1;
-          fTitle = ch.title || "";
-          fContent = ch.content || "";
-        } else {
-          toast.error("Chapter not found");
-        }
-      } else {
-        fNovelId = presetNovelId || novels[0]?.id || "";
-        fNumber = 1;
-        fTitle = "";
-        fContent = "";
-      }
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to load");
-    } finally {
-      loading = false;
-    }
-  }
-
-  $effect(() => {
-    if (user?.role === "admin") init();
+    chapterEditorStore.init(editId, presetNovelId, novelSlug, chapterNumber);
   });
-
-  async function save() {
-    if (!fNovelId) {
-      toast.error("Please select a novel");
-      return;
-    }
-    if (!fTitle.trim()) {
-      toast.error("Please enter a chapter title");
-      return;
-    }
-    if (!fContent.trim()) {
-      toast.error("Please write some content");
-      return;
-    }
-    saving = true;
-    try {
-      if (editing) {
-        await rpc("updateChapter", {
-          id: editing.id,
-          title: fTitle,
-          content: fContent,
-        });
-        toast.success("Chapter updated!");
-      } else {
-        await rpc("createChapter", {
-          novel_id: fNovelId,
-          number: fNumber,
-          title: fTitle,
-          content: fContent,
-        });
-        toast.success("Chapter published!");
-      }
-      goto("/admin?tab=chapters");
-    } catch (e: any) {
-      toast.error(e?.message || "Failed to save");
-    } finally {
-      saving = false;
-    }
-  }
-
-  let selectedNovel = $derived(novels.find((n) => n.id === fNovelId));
 </script>
 
 <svelte:head>
-  <title>{editing ? "Edit Chapter" : "New Chapter"} — NovelHive Admin</title>
+  <title>{chapterEditorStore.editing ? "Edit" : "New"} Chapter - Admin</title>
 </svelte:head>
 
-{#if loading}
-  <main class="flex min-h-[70vh] items-center justify-center">
-    <div class="text-center">
-      <Loader2 class="mx-auto mb-3 h-8 w-8 animate-spin text-brand" />
-      <p class="text-sm text-muted-foreground">Loading editor…</p>
-    </div>
-  </main>
-{:else}
-  <div class="mx-auto w-full max-w-[1200px] px-4 py-6 md:px-6">
-    <!-- Top bar -->
-    <div class="mb-6 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <a
-          href="/admin?tab=chapters"
-          class="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-muted-foreground hover:bg-white/10 hover:text-foreground transition"
-        >
+<div class="min-h-screen bg-background pb-20">
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-background/80 py-4 backdrop-blur-xl">
+    <div class="container mx-auto px-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <a href="/admin" class="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-card hover:bg-white/5">
           <ArrowLeft class="h-4 w-4" />
         </a>
         <div>
-          <h1 class="font-display text-xl font-extrabold md:text-2xl">
-            {editing ? "Edit Chapter" : "New Chapter"}
-          </h1>
-          {#if selectedNovel}
-            <p class="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-              <BookOpen class="h-3 w-3" />
-              {selectedNovel.title}
-            </p>
-          {/if}
+          <h1 class="font-display text-lg font-extrabold">{chapterEditorStore.editing ? "Edit Chapter" : "New Chapter"}</h1>
+          <p class="text-xs text-muted-foreground">{chapterEditorStore.wordCount} words</p>
         </div>
       </div>
-
-      <div class="flex items-center gap-2">
-        <span class="hidden sm:inline text-xs text-muted-foreground tabular-nums">
-          {wordCount} words
-        </span>
-        <button
-          onclick={save}
-          disabled={saving}
-          class={cn(
-            "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-glow transition",
-            saving ? "opacity-60 cursor-not-allowed bg-muted" : "gradient-brand hover:opacity-90"
-          )}
-        >
-          {#if saving}
-            <Loader2 class="h-4 w-4 animate-spin" />
-          {:else if editing}
-            <Save class="h-4 w-4" />
-          {:else}
-            <Send class="h-4 w-4" />
-          {/if}
-          {saving ? "Saving…" : editing ? "Save Changes" : "Publish"}
-        </button>
-      </div>
+      <button
+        onclick={() => chapterEditorStore.save()}
+        disabled={chapterEditorStore.saving}
+        class="inline-flex items-center gap-2 rounded-xl gradient-brand px-5 py-2.5 text-sm font-bold text-white shadow-glow transition disabled:opacity-50"
+      >
+        {#if chapterEditorStore.saving}
+          <Loader2 class="h-4 w-4 animate-spin" />
+        {:else if chapterEditorStore.editing}
+          <Save class="h-4 w-4" />
+        {:else}
+          <Send class="h-4 w-4" />
+        {/if}
+        {chapterEditorStore.editing ? "Save Changes" : "Publish"}
+      </button>
     </div>
+  </header>
 
-    <!-- Meta fields -->
-    <div class="mb-5 rounded-2xl border border-white/5 bg-card/60 p-5">
-      <div class="grid gap-4 sm:grid-cols-[1fr_200px_100px]">
-        <!-- Novel picker -->
-        <div>
-          <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Novel
-          </label>
-          {#if editing}
-            <div class="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-muted-foreground">
-              <BookOpen class="h-4 w-4 shrink-0" />
-              {selectedNovel?.title || "Unknown"}
-            </div>
-          {:else}
+  {#if chapterEditorStore.loading}
+    <div class="grid h-[50vh] place-items-center">
+      <Loader2 class="h-8 w-8 animate-spin text-brand" />
+    </div>
+  {:else}
+    <main class="container mx-auto mt-8 max-w-4xl px-4">
+      <div class="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div class="space-y-2 lg:col-span-2">
+          <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Select Novel</label>
+          <div class="relative">
+            <BookOpen class="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <select
-              bind:value={fNovelId}
-              class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30"
+              bind:value={chapterEditorStore.fNovelId}
+              class="w-full appearance-none rounded-xl border border-white/10 bg-card py-3 pl-10 pr-4 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30"
+              disabled={!!chapterEditorStore.editing}
             >
-              {#each novels as n}
-                <option value={n.id} class="bg-background">{n.title}</option>
+              {#if !chapterEditorStore.fNovelId}<option value="">-- Choose a novel --</option>{/if}
+              {#each chapterEditorStore.novels as n}
+                <option value={n.id}>{n.title}</option>
               {/each}
             </select>
-          {/if}
+          </div>
         </div>
 
-        <!-- Title -->
-        <div>
-          <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Chapter Title
-          </label>
-          <input
-            bind:value={fTitle}
-            placeholder="e.g. The Beginning"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30"
-          />
-        </div>
-
-        <!-- Number -->
-        <div>
-          <label class="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Chapter #
-          </label>
+        <div class="space-y-2">
+          <label class="text-xs font-bold uppercase tracking-widest text-muted-foreground">Chapter No.</label>
           <input
             type="number"
-            bind:value={fNumber}
+            bind:value={chapterEditorStore.fNumber}
             min="1"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-center focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30"
+            class="w-full rounded-xl border border-white/10 bg-card px-4 py-3 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30"
+            disabled={!!chapterEditorStore.editing}
           />
         </div>
       </div>
-    </div>
 
-    <!-- Editor -->
-    <div class="mb-6">
-      <ChapterEditor
-        content={fContent}
-        onchange={(text) => (fContent = text)}
-        placeholder="Start writing your chapter…"
-      />
-    </div>
-
-    <!-- Bottom bar -->
-    <div class="flex items-center justify-between rounded-2xl border border-white/5 bg-card/60 px-5 py-3">
-      <span class="text-xs text-muted-foreground tabular-nums">
-        {wordCount} words
-      </span>
-      <div class="flex items-center gap-2">
-        <a
-          href="/admin?tab=chapters"
-          class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-white/10 hover:text-foreground transition"
-        >
-          Cancel
-        </a>
-        <button
-          onclick={save}
-          disabled={saving}
-          class={cn(
-            "inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-glow transition",
-            saving ? "opacity-60 cursor-not-allowed bg-muted" : "gradient-brand hover:opacity-90"
-          )}
-        >
-          {#if saving}
-            <Loader2 class="h-4 w-4 animate-spin" />
-          {:else if editing}
-            <Save class="h-4 w-4" />
-          {:else}
-            <Send class="h-4 w-4" />
-          {/if}
-          {saving ? "Saving…" : editing ? "Save Changes" : "Publish"}
-        </button>
+      <div class="space-y-6">
+        <div>
+          <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Chapter Title</label>
+          <input
+            bind:value={chapterEditorStore.fTitle}
+            placeholder="e.g. The Beginning of the End"
+            class="w-full rounded-2xl border border-white/10 bg-card px-5 py-4 text-lg font-bold focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30"
+          />
+        </div>
+        
+        <div>
+          <label class="mb-2 block text-xs font-bold uppercase tracking-widest text-muted-foreground">Content</label>
+          <div class="overflow-hidden rounded-2xl border border-white/10 bg-card transition-all focus-within:border-brand/60 focus-within:ring-2 focus-within:ring-brand/30">
+            <ChapterEditor bind:content={chapterEditorStore.fContent} />
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-{/if}
+    </main>
+  {/if}
+</div>

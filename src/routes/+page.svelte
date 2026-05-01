@@ -20,7 +20,7 @@
 
 <main class="mx-auto w-full max-w-[1600px] px-4 md:px-6 2xl:px-8">
   <!-- HERO -->
-  <section class="relative isolate overflow-hidden rounded-3xl border border-white/5 bg-surface/40 p-6 md:p-10 mt-6">
+  <section class="relative isolate overflow-hidden rounded-2xl md:rounded-3xl border border-white/5 bg-surface/40 p-5 md:p-10 mt-4 md:mt-6">
     <div class="absolute -top-32 right-0 h-96 w-96 shimmer-bg opacity-80" aria-hidden="true"></div>
     <div class="absolute -bottom-32 -left-20 h-80 w-80 shimmer-bg opacity-60" aria-hidden="true"></div>
 
@@ -29,18 +29,18 @@
         <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-muted-foreground">
           <span class="h-1.5 w-1.5 rounded-full bg-brand pulse-dot"></span> Welcome back to NovelHive
         </div>
-        <h1 class="mt-4 font-display text-4xl font-extrabold leading-tight text-balance md:text-6xl">
+        <h1 class="mt-4 font-display text-4xl font-extrabold leading-[1.1] text-balance md:text-6xl">
           Worlds within <span class="gradient-text">words</span>.<br />
           Find your next favorite chapter.
         </h1>
-        <p class="mt-4 max-w-lg text-base text-muted-foreground md:text-lg">
+        <p class="mt-4 max-w-lg text-sm text-muted-foreground sm:text-base md:text-lg leading-relaxed">
           Hand-picked translations, original fiction and trending hits — wrapped in a reader you'll actually love using.
         </p>
-        <div class="mt-6 flex flex-wrap items-center gap-3">
-          <a href="/novels" class="inline-flex items-center gap-2 rounded-xl gradient-brand px-5 py-3 text-sm font-bold text-white shadow-glow transition hover:opacity-90">
+        <div class="mt-6 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
+          <a href="/novels" class="inline-flex items-center justify-center gap-2 rounded-xl gradient-brand px-6 py-3.5 text-sm font-bold text-white shadow-glow transition hover:opacity-90">
             Start reading <ArrowRight class="h-4 w-4" />
           </a>
-          <a href="/search" class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-foreground hover:bg-white/10">
+          <a href="/search" class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3.5 text-sm font-semibold text-foreground hover:bg-white/10">
             <Sparkles class="h-4 w-4 text-brand" /> Discover
           </a>
         </div>
@@ -54,20 +54,20 @@
           style="animation-delay: 120ms"
         >
           <div class="absolute inset-0 -z-10 translate-x-6 translate-y-6 rounded-2xl gradient-brand opacity-40 blur-2xl" aria-hidden="true"></div>
-          <div class="grid grid-cols-[140px_1fr] gap-4 overflow-hidden rounded-2xl border border-white/10 bg-card/70 p-3 backdrop-blur md:grid-cols-[180px_1fr]">
+          <div class="grid grid-cols-[100px_1fr] sm:grid-cols-[140px_1fr] gap-3 sm:gap-4 overflow-hidden rounded-2xl border border-white/10 bg-card/70 p-3 backdrop-blur md:grid-cols-[180px_1fr]">
             <div class="cover-frame rounded-xl ring-1 ring-white/10">
               {#if heroCover}
                 <img src={heroCover} alt={hero.title} class="absolute inset-0 h-full w-full object-cover" />
               {:else}
-                <div class="absolute inset-0 grid place-items-center text-muted-foreground/40"><BookOpen class="h-8 w-8" /></div>
+                <div class="absolute inset-0 grid place-items-center text-muted-foreground/40"><BookOpen class="h-6 w-6 sm:h-8 sm:w-8" /></div>
               {/if}
             </div>
-            <div class="flex flex-col justify-between p-1">
+            <div class="flex flex-col justify-between p-0 sm:p-1">
               <div>
-                <div class="text-[10px] font-bold uppercase tracking-widest text-brand">Editor's pick</div>
-                <div class="mt-1 line-clamp-2 font-display text-xl font-extrabold leading-tight md:text-2xl">{hero.title}</div>
-                <div class="mt-1 text-xs text-muted-foreground">by {hero.author || "Unknown"}</div>
-                <p class="mt-3 line-clamp-3 text-sm text-muted-foreground">{hero.synopsis || "A story waiting to be told."}</p>
+                <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-brand">Editor's pick</div>
+                <div class="mt-1 line-clamp-2 font-display text-lg sm:text-xl font-extrabold leading-tight md:text-2xl">{hero.title}</div>
+                <div class="mt-1 text-[11px] sm:text-xs text-muted-foreground">by {hero.author || "Unknown"}</div>
+                <p class="mt-2 sm:mt-3 line-clamp-2 sm:line-clamp-3 text-xs sm:text-sm text-muted-foreground">{hero.synopsis || "A story waiting to be told."}</p>
               </div>
               <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 {#if hero.genres?.[0]}
@@ -104,7 +104,7 @@
       <div class="-mx-4 mt-3 overflow-hidden md:-mx-6">
         <div class="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:gap-5 md:px-6">
           {#each trending as n, i}
-            <div class="snap-start shrink-0 w-[140px] sm:w-[160px] md:w-[180px]">
+            <div class="snap-start shrink-0 w-[140px] sm:w-[160px] md:w-[180px] mt-3 ">
               <NovelCard novel={n} {coverBase} index={i} />
             </div>
           {/each}

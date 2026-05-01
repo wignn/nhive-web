@@ -1,25 +1,10 @@
 <script lang="ts">
   interface Props {
     content?: string;
-    onchange?: (text: string) => void;
     placeholder?: string;
   }
 
-  let { content = "", onchange, placeholder = "Start writing your chapter…" }: Props = $props();
-
-  let value = $state(content);
-
-  $effect(() => {
-    if (content !== undefined && content !== value) {
-      value = content;
-    }
-  });
-
-  function handleInput(e: Event) {
-    const target = e.target as HTMLTextAreaElement;
-    value = target.value;
-    onchange?.(value);
-  }
+  let { content = $bindable(""), placeholder = "Start writing your chapter…" }: Props = $props();
 
   function autoResize(node: HTMLTextAreaElement) {
     function resize() {
@@ -41,8 +26,7 @@
   <textarea
     use:autoResize
     {placeholder}
-    oninput={handleInput}
-    value={value}
+    bind:value={content}
     class="editor-textarea"
     spellcheck="true"
   ></textarea>
