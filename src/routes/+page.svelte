@@ -101,10 +101,10 @@
           View all <ArrowRight class="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
         </a>
       </div>
-      <div class="-mx-4 mt-3 overflow-hidden md:-mx-6">
+      <div class=" mt-3 overflow-hidden md:-mx-6">
         <div class="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:gap-5 md:px-6">
           {#each trending as n, i}
-            <div class="snap-start shrink-0 w-[140px] sm:w-[160px] md:w-[180px] mt-3 ">
+            <div class="snap-start shrink-0 w-[140px] sm:w-[160px] md:w-[180px]">
               <NovelCard novel={n} {coverBase} index={i} />
             </div>
           {/each}
@@ -113,7 +113,6 @@
     </section>
   {/if}
 
-  <!-- RECENT GRID -->
   <section class="mt-12">
     <div class="flex items-end justify-between gap-3">
       <div>
