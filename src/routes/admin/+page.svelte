@@ -8,13 +8,16 @@
   
   let genres = $state<any[]>([]);
   let fGenreName = $state("");
+  let creatingGenre = $state(false);
   
   type Tab = "novels" | "chapters" | "genres" | "users";
 
   let user = $derived($page.data.user);
   let loadingAuth = false; // Layout handles auth loading already
 
-  let tab = $state<Tab>("novels");
+  const validTabs: Tab[] = ["novels", "chapters", "genres", "users"];
+  const urlTab = new URL($page.url).searchParams.get("tab") as Tab | null;
+  let tab = $state<Tab>(urlTab && validTabs.includes(urlTab) ? urlTab : "novels");
   let novels = $state<any[]>([]);
   let chapters = $state<any[]>([]);
   let users = $state<any[]>([]);
@@ -98,11 +101,7 @@
   let fGenres = $state<string[]>([]);
   let uploading = $state(false);
 
-  // Chapter form states
-  let fNovelId = $state("");
-  let fNumber = $state(1);
-  let fTitleCh = $state("");
-  let fContent = $state("");
+  // Chapter form states removed — chapters now use full-page editor at /admin/chapter
 
   function openNovelForm(n?: any) {
     editing = n;
@@ -114,15 +113,6 @@
     fCoverUrl = n?.cover_url || "";
     fCoverPreview = initialPreview;
     fGenres = (n?.genres || []).map((g: any) => (typeof g === "string" ? g : g.name));
-    showModal = true;
-  }
-
-  function openChapterForm(c?: any) {
-    editing = c;
-    fNovelId = c?.novel_id || novels[0]?.id || "";
-    fNumber = c?.number || 1;
-    fTitleCh = c?.title || "";
-    fContent = c?.content || "";
     showModal = true;
   }
 
@@ -155,19 +145,6 @@
     try {
       if (editing) await rpc("updateNovel", { id: editing.id, data });
       else await rpc("createNovel", data);
-      toast.success(editing ? "Updated" : "Created");
-      showModal = false;
-      reload();
-    } catch (e: any) { toast.error(e?.message); }
-  }
-
-  async function saveChapter() {
-    const data = {
-      novel_id: fNovelId, number: fNumber, title: fTitleCh, content: fContent,
-    };
-    try {
-      if (editing) await rpc("updateChapter", { id: editing.id, ...data });
-      else await rpc("createChapter", data);
       toast.success(editing ? "Updated" : "Created");
       showModal = false;
       reload();
@@ -238,13 +215,21 @@
       <!-- Toolbar -->
       <div class="mb-4 flex items-center justify-between">
         <h2 class="font-display text-xl font-extrabold capitalize">{tab}</h2>
-        {#if tab === "novels" || tab === "chapters"}
+        {#if tab === "novels"}
           <button
-            onclick={() => tab === "novels" ? openNovelForm() : openChapterForm()}
+            onclick={() => openNovelForm()}
             class="inline-flex items-center gap-2 rounded-xl gradient-brand px-4 py-2 text-sm font-bold text-white shadow-glow"
           >
-            <Plus class="h-4 w-4" /> New {tab === "novels" ? "novel" : "chapter"}
+            <Plus class="h-4 w-4" /> New novel
           </button>
+        {/if}
+        {#if tab === "chapters"}
+          <a
+            href="/admin/chapter"
+            class="inline-flex items-center gap-2 rounded-xl gradient-brand px-4 py-2 text-sm font-bold text-white shadow-glow"
+          >
+            <Plus class="h-4 w-4" /> New chapter
+          </a>
         {/if}
       </div>
 
@@ -320,7 +305,7 @@
                     <td class="p-3 text-sm">{c.word_count}</td>
                     <td class="p-3 text-right">
                       <div class="inline-flex items-center gap-2">
-                        <button onclick={() => openChapterForm(c)} class="rounded-lg border border-white/10 bg-white/5 p-1.5 hover:bg-white/10" title="Edit"><Pencil class="h-3.5 w-3.5" /></button>
+                        <a href="/admin/chapter?id={c.id}&novel_slug={c.novel_slug}&number={c.number}" class="rounded-lg border border-white/10 bg-white/5 p-1.5 hover:bg-white/10" title="Edit"><Pencil class="h-3.5 w-3.5" /></a>
                         <button onclick={async () => {
                           if (!confirm("Delete this chapter?")) return;
                           try { await rpc("deleteChapter", { id: c.id }); toast.success("Deleted"); reload(); }
@@ -337,32 +322,65 @@
 
         {#if tab === "genres"}
           <div class="mb-4">
-            <form class="flex gap-2" onsubmit={(e) => {
-              e.preventDefault();
-              if (!fGenreName) return;
-              rpc("createGenre", { name: fGenreName }).then(() => {
-                fGenreName = "";
-                toast.success("Genre created");
-                reload();
-              }).catch((err: any) => toast.error(err.message));
-            }}>
-              <input bind:value={fGenreName} placeholder="New genre name..." class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30" />
-              <button type="submit" class="rounded-xl gradient-brand px-4 py-2 text-sm font-bold text-white shadow-glow whitespace-nowrap">Create Genre</button>
-            </form>
+            <div class="flex gap-2">
+              <input
+                bind:value={fGenreName}
+                placeholder="New genre name..."
+                class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30"
+                onkeydown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!fGenreName.trim() || creatingGenre) return;
+                    creatingGenre = true;
+                    rpc('createGenre', { name: fGenreName.trim() }).then(() => {
+                      fGenreName = '';
+                      toast.success('Genre created');
+                      reload();
+                    }).catch((err: any) => toast.error(err.message)).finally(() => creatingGenre = false);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                disabled={!fGenreName.trim() || creatingGenre}
+                onclick={() => {
+                  if (!fGenreName.trim() || creatingGenre) return;
+                  creatingGenre = true;
+                  rpc('createGenre', { name: fGenreName.trim() }).then(() => {
+                    fGenreName = '';
+                    toast.success('Genre created');
+                    reload();
+                  }).catch((err: any) => toast.error(err.message)).finally(() => creatingGenre = false);
+                }}
+                class={cn(
+                  "rounded-xl px-4 py-2 text-sm font-bold text-white shadow-glow whitespace-nowrap transition",
+                  !fGenreName.trim() || creatingGenre ? "opacity-50 cursor-not-allowed bg-muted" : "gradient-brand cursor-pointer"
+                )}
+              >
+                {#if creatingGenre}
+                  <Loader2 class="h-4 w-4 animate-spin inline mr-1" />
+                {/if}
+                Create Genre
+              </button>
+            </div>
           </div>
           <div class="flex flex-wrap gap-2 rounded-2xl border border-white/5 bg-card/60 p-4">
-            {#each genres as g}
-              <span class="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 pl-3 pr-1 py-1 text-xs font-semibold">
-                {g.name}
-                <button onclick={() => {
-                  if (!confirm(`Delete genre: ${g.name}?`)) return;
-                  rpc("deleteGenre", { id: g.id }).then(() => {
-                    toast.success("Deleted");
-                    reload();
-                  }).catch((err: any) => toast.error(err.message));
-                }} class="rounded px-1.5 py-1 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"><X class="h-3.5 w-3.5"/></button>
-              </span>
-            {/each}
+            {#if genres.length === 0}
+              <p class="text-sm text-muted-foreground">No genres yet. Create one above.</p>
+            {:else}
+              {#each genres as g}
+                <span class="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 pl-3 pr-1 py-1 text-xs font-semibold">
+                  {g.name}
+                  <button type="button" onclick={() => {
+                    if (!confirm(`Delete genre: ${g.name}?`)) return;
+                    rpc("deleteGenre", { id: g.id }).then(() => {
+                      toast.success("Deleted");
+                      reload();
+                    }).catch((err: any) => toast.error(err.message));
+                  }} class="rounded px-1.5 py-1 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"><X class="h-3.5 w-3.5"/></button>
+                </span>
+              {/each}
+            {/if}
           </div>
         {/if}
 
@@ -483,45 +501,6 @@
                 onclick={saveNovel}
                 class="rounded-xl gradient-brand px-4 py-2 text-sm font-bold text-white shadow-glow"
               >{editing ? "Save changes" : "Create"}</button>
-            </div>
-          {:else}
-            <h2 class="mb-4 font-display text-xl font-extrabold">{editing ? "Edit chapter" : "Create chapter"}</h2>
-            {#if !editing}
-              <div class="mb-3">
-                <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Novel</label>
-                <select
-                  bind:value={fNovelId}
-                  class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm focus:outline-none"
-                >
-                  {#each novels as n}
-                    <option value={n.id} class="bg-background">{n.title}</option>
-                  {/each}
-                </select>
-              </div>
-            {/if}
-            <div class="grid grid-cols-[100px_1fr] gap-3">
-              <div>
-                <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Number</label>
-                <input type="number" bind:value={fNumber} class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30" />
-              </div>
-              <div>
-                <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Title</label>
-                <input bind:value={fTitleCh} class="w-full rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30" />
-              </div>
-            </div>
-            <div class="mt-3">
-              <label class="mb-1 block text-xs font-bold uppercase tracking-wider text-muted-foreground">Content</label>
-              <textarea
-                bind:value={fContent}
-                class="min-h-64 w-full resize-y rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm focus:border-brand/60 focus:outline-none focus:ring-2 focus:ring-brand/30 font-mono"
-              ></textarea>
-            </div>
-            <div class="mt-5 flex justify-end gap-2">
-              <button onclick={() => showModal = false} class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold">Cancel</button>
-              <button
-                onclick={saveChapter}
-                class="rounded-xl gradient-brand px-4 py-2 text-sm font-bold text-white shadow-glow"
-              >{editing ? "Save changes" : "Publish"}</button>
             </div>
           {/if}
         </div>

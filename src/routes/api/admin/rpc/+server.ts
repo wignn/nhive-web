@@ -15,6 +15,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 				return json(await gatewayFetch('/api/v1/admin/novels', { token: locals.token }));
 			case 'listChapters':
 				return json(await gatewayFetch('/api/v1/admin/chapters', { token: locals.token }));
+			case 'getChapter':
+				return json(await gatewayFetch(`/api/v1/admin/chapters/single?novel_slug=${payload.novel_slug}&number=${payload.number}`, { token: locals.token }));
 			case 'listUsers':
 				return json(await gatewayFetch('/api/v1/admin/users', { token: locals.token }));
 			case 'createNovel':
