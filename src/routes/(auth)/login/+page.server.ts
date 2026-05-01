@@ -19,18 +19,20 @@ export const actions = {
 				body: JSON.stringify({ email, password })
 			});
 
-			const token = resp?.token || resp?.access_token;
-			if (!token) throw new Error('No token returned');
+			const accessToken = resp?.access_token;
+			const refreshToken = resp?.refresh_token;
+			if (!accessToken) throw new Error('No token returned');
 
 			let user = resp?.user;
 			if (!user) {
 				try {
-					user = await gatewayFetch(`/api/v1/auth/me`, { token });
+					user = await gatewayFetch(`/api/v1/auth/me`, { token: accessToken });
 				} catch {}
 			}
 
 			const sessionData = {
-				token,
+				accessToken,
+				refreshToken,
 				user: user
 					? {
 							id: user.id,
@@ -47,7 +49,7 @@ export const actions = {
 				httpOnly: true,
 				secure: !dev,
 				sameSite: 'lax',
-				maxAge: 60 * 60 * 24 * 30 // 30 days
+				maxAge: 60 * 60 * 24 * 7 // 7 days (match refresh token lifetime)
 			});
 
 		} catch (err: any) {
