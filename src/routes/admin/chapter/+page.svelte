@@ -7,14 +7,13 @@
     Save,
     Send,
   } from "lucide-svelte";
-  import TiptapEditor from "$lib/components/TiptapEditor.svelte";
+  import ChapterEditor from "$lib/components/ChapterEditor.svelte";
   import { toast } from "svelte-sonner";
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
 
   let user = $derived($page.data.user);
 
-  // URL params: ?novel_id=x&id=x (id = chapter id for editing)
   let params = $derived(new URL($page.url).searchParams);
   let editId = $derived(params.get("id") || "");
   let presetNovelId = $derived(params.get("novel_id") || "");
@@ -24,16 +23,14 @@
   let saving = $state(false);
   let editing = $state<any>(null);
 
-  // Form fields
   let fNovelId = $state("");
   let fNumber = $state(1);
   let fTitle = $state("");
   let fContent = $state("");
 
-  // Word count derived from content
   let wordCount = $derived(
     fContent
-      .replace(/<[^>]*>/g, " ")
+      .trim()
       .split(/\s+/)
       .filter((w) => w.length > 0).length
   );
@@ -115,7 +112,7 @@
       toast.error("Please enter a chapter title");
       return;
     }
-    if (!fContent || fContent === "<p></p>") {
+    if (!fContent.trim()) {
       toast.error("Please write some content");
       return;
     }
@@ -261,9 +258,9 @@
 
     <!-- Editor -->
     <div class="mb-6">
-      <TiptapEditor
+      <ChapterEditor
         content={fContent}
-        onchange={(html) => (fContent = html)}
+        onchange={(text) => (fContent = text)}
         placeholder="Start writing your chapter…"
       />
     </div>

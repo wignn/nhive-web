@@ -17,8 +17,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 		try {
 			const sessionData = JSON.parse(Buffer.from(sessionStr, 'base64').toString('utf-8'));
 			
-			if (sessionData.user && sessionData.accessToken) {
-				let accessToken = sessionData.accessToken;
+			if (sessionData.user && (sessionData.accessToken || sessionData.token)) {
+				let accessToken = sessionData.accessToken || sessionData.token;
 				let refreshToken = sessionData.refreshToken;
 				let needsCookieUpdate = false;
 
