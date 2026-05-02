@@ -13,7 +13,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		if (!image) return json({ error: 'No image provided' }, { status: 400 });
 
 		const gatewayUrl = env.NOVELHIVE_GATEWAY_URL || 'http://localhost:8080';
-		const internalKey = env.NOVELHIVE_INTERNAL_KEY || 'dev-internal-key';
+		const gatewayApiKey = env.NOVELHIVE_GATEWAY_API_KEY || env.NOVELHIVE_INTERNAL_API_KEY;
+		if (!gatewayApiKey) return json({ error: 'NOVELHIVE_GATEWAY_API_KEY is not set' }, { status: 500 });
 
 		const body = new FormData();
 		body.append('image', image);
@@ -22,7 +23,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 			method: 'POST',
 			headers: {
 				'Authorization': `Bearer ${locals.token}`,
-				'X-Internal-Key': internalKey
+				'X-API-Key': gatewayApiKey
 			},
 			body: body
 		});

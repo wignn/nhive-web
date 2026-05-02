@@ -7,16 +7,16 @@ export type GatewayInit = RequestInit & {
 
 export async function gatewayFetch(path: string, init: GatewayInit = {}) {
   const GATEWAY_URL = env.NOVELHIVE_GATEWAY_URL;
-  const INTERNAL_KEY = env.NOVELHIVE_INTERNAL_API_KEY;
+  const GATEWAY_API_KEY = env.NOVELHIVE_GATEWAY_API_KEY || env.NOVELHIVE_INTERNAL_API_KEY;
 
   if (!GATEWAY_URL) throw new Error("NOVELHIVE_GATEWAY_URL is not set");
-  if (!INTERNAL_KEY) throw new Error("NOVELHIVE_INTERNAL_API_KEY is not set");
+  if (!GATEWAY_API_KEY) throw new Error("NOVELHIVE_GATEWAY_API_KEY is not set");
  
   const headers = new Headers(init.headers);
   if (!headers.has("Content-Type") && init.body && !(init.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
-  headers.set("X-Internal-Key", INTERNAL_KEY);
+  headers.set("X-API-Key", GATEWAY_API_KEY);
   if (init.token) headers.set("Authorization", `Bearer ${init.token}`);
 
   const url = `${GATEWAY_URL.replace(/\/$/, "")}${path}`;
