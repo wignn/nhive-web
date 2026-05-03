@@ -16,7 +16,7 @@ export async function gatewayFetch(path: string, init: GatewayInit = {}) {
   if (!headers.has("Content-Type") && init.body && !(init.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
-  headers.set("X-API-Key", GATEWAY_API_KEY);
+  headers.set("x-api-key", GATEWAY_API_KEY);
   if (init.token) headers.set("Authorization", `Bearer ${init.token}`);
 
   const url = `${GATEWAY_URL.replace(/\/$/, "")}${path}`;

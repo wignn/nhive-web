@@ -28,7 +28,7 @@
   <title>{novel?.title || 'Novel'} — NovelHive</title>
 </svelte:head>
 
-<main class="mx-auto w-full max-w-[1400px] px-4 py-8 md:px-6 2xl:px-8">
+<main class="mx-auto w-full max-w-5xl px-4 py-6 md:px-6 md:py-10">
   <!-- Backdrop -->
   <div class="relative mb-8 overflow-hidden rounded-3xl border border-white/5">
     {#if cover}
@@ -111,7 +111,7 @@
             use:enhance={() => {
               if (!user) {
                 toast.info("Sign in to manage your library");
-                return ({ update }) => update({ reset: false }); // Cancel submission
+                return ({ update }) => update({ reset: false });
               }
               libBusy = true;
               return async ({ result, update }) => {
@@ -146,56 +146,59 @@
           </form>
         </div>
 
-        <div class="mt-6 grid max-w-md grid-cols-3 gap-3">
-          <div class="rounded-xl border border-white/5 bg-white/[0.03] p-3">
-            <div class="font-display text-lg font-extrabold">{novel.total_chapters ?? "—"}</div>
-            <div class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Chapters</div>
+        <div class="mt-8 grid max-w-md grid-cols-3 gap-3">
+          <div class="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/[0.03] p-3 text-center transition hover:bg-white/[0.05]">
+            <div class="font-display text-xl font-extrabold text-foreground/90">{novel.total_chapters ?? "—"}</div>
+            <div class="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Chapters</div>
           </div>
-          <div class="rounded-xl border border-white/5 bg-white/[0.03] p-3">
-            <div class="font-display text-lg font-extrabold">{typeof novel.view_count === "number" ? formatCount(novel.view_count) : "—"}</div>
-            <div class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Views</div>
+          <div class="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/[0.03] p-3 text-center transition hover:bg-white/[0.05]">
+            <div class="font-display text-xl font-extrabold text-foreground/90">{typeof novel.view_count === "number" ? formatCount(novel.view_count) : "—"}</div>
+            <div class="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Views</div>
           </div>
-          <div class="rounded-xl border border-white/5 bg-white/[0.03] p-3">
-            <div class="font-display text-lg font-extrabold capitalize">{novel.status ?? "—"}</div>
-            <div class="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Status</div>
+          <div class="flex flex-col items-center justify-center rounded-xl border border-white/5 bg-white/[0.03] p-3 text-center transition hover:bg-white/[0.05]">
+            <div class="font-display text-xl font-extrabold capitalize text-foreground/90">{novel.status ?? "—"}</div>
+            <div class="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Status</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Chapters -->
-  <section>
-    <div class="mb-4 flex items-end justify-between">
-      <h2 class="font-display text-2xl font-extrabold">Chapters</h2>
-      <span class="text-xs text-muted-foreground">{chapters.length} total</span>
+  <section class="mt-10 md:mt-12">
+    <div class="mb-5 flex items-end justify-between px-1">
+      <h2 class="font-display text-2xl font-extrabold md:text-3xl">Chapters</h2>
+      <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-muted-foreground">{chapters.length} total</span>
     </div>
     {#if chapters.length === 0}
-      <div class="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] py-12 text-center text-muted-foreground">
+      <div class="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] py-16 text-center text-muted-foreground">
         No chapters published yet.
       </div>
     {:else}
-      <ul class="overflow-hidden rounded-2xl border border-white/5 bg-card/60">
-        {#each chapters as c, i}
-          <li>
-            <a
-              href={`/novel/${novel.slug}/${c.number}`}
-              class={cn(
-                "flex items-center gap-4 px-4 py-3 transition hover:bg-white/5 md:px-6",
-                i !== chapters.length - 1 && "border-b border-white/5",
-              )}
-            >
-              <span class="grid h-9 w-12 shrink-0 place-items-center rounded-md bg-white/5 text-xs font-bold text-muted-foreground">
-                {c.number}
-              </span>
-              <span class={cn("flex-1 truncate text-sm font-semibold", libEntry?.progress >= c.number && "text-muted-foreground/60")}>
-                {c.title}
-              </span>
-              <span class="hidden text-xs text-muted-foreground md:inline">{c.word_count} words</span>
-            </a>
-          </li>
-        {/each}
-      </ul>
+      <div class="overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] shadow-xl">
+        <ul class="flex flex-col">
+          {#each chapters as c, i}
+            <li>
+              <a
+                href={`/novel/${novel.slug}/${c.number}`}
+                class={cn(
+                  "group flex items-center gap-4 px-4 py-4 transition hover:bg-white/[0.04] md:px-6",
+                  i !== chapters.length - 1 && "border-b border-white/5",
+                )}
+              >
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/5 text-sm font-bold text-muted-foreground transition group-hover:bg-brand/20 group-hover:text-brand">
+                  {c.number}
+                </span>
+                <span class={cn("flex-1 text-sm font-medium transition group-hover:text-white md:text-base", libEntry?.progress >= c.number ? "text-muted-foreground" : "text-foreground/90")}>
+                  {c.title || `Chapter ${c.number}`}
+                </span>
+                <span class="hidden text-xs font-medium text-muted-foreground/60 transition group-hover:text-muted-foreground md:inline">
+                  {c.word_count} words
+                </span>
+              </a>
+            </li>
+          {/each}
+        </ul>
+      </div>
     {/if}
   </section>
 </main>
