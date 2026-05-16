@@ -9,6 +9,7 @@ declare global {
 				username: string;
 				email: string;
 				role: string;
+				avatar_url?: string;
 			};
 			token?: string;
 		}
@@ -18,6 +19,7 @@ declare global {
 				username: string;
 				email: string;
 				role: string;
+				avatar_url?: string;
 			};
 		}
 		// interface PageState {}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Search, BookOpen, Library, Shield, LogOut, Menu, X, ChevronDown } from "lucide-svelte";
+  import { Search, BookOpen, Library, Shield, LogOut, Menu, X, ChevronDown, UserRound } from "lucide-svelte";
 
   import { page } from "$app/stores";
   import { cn } from "$lib/utils";
@@ -130,9 +130,13 @@
           onclick={() => openMenu = !openMenu}
           class="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1 pr-3 text-sm hover:bg-white/10 md:flex"
         >
-          <span class="grid h-7 w-7 place-items-center rounded-full gradient-brand text-xs font-bold text-white">
-            {user.username[0]?.toUpperCase()}
-          </span>
+          {#if user.avatar_url}
+            <img src={user.avatar_url} alt="" class="h-7 w-7 rounded-full object-cover" />
+          {:else}
+            <span class="grid h-7 w-7 place-items-center rounded-full gradient-brand text-xs font-bold text-white">
+              {user.username[0]?.toUpperCase()}
+            </span>
+          {/if}
           <span class="font-semibold">{user.username}</span>
           <ChevronDown class="h-3.5 w-3.5 text-muted-foreground" />
         </button>
@@ -142,6 +146,13 @@
               <div class="text-sm font-semibold">{user.username}</div>
               <div class="text-[11px] uppercase tracking-wider text-muted-foreground">{user.role}</div>
             </div>
+            <a
+              href="/profile"
+              onclick={() => openMenu = false}
+              class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/5"
+            >
+              <UserRound class="h-4 w-4" /> Profile
+            </a>
             <a
               href="/library"
               onclick={() => openMenu = false}
@@ -211,6 +222,9 @@
       {/each}
       <div class="my-2 h-px bg-white/5"></div>
       {#if user}
+        <a href="/profile" onclick={() => openMobile = false} class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-white/5">
+          Profile
+        </a>
         <a href="/library" onclick={() => openMobile = false} class="block rounded-lg px-3 py-2 text-sm font-semibold hover:bg-white/5">
           My Library
         </a>

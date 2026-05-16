@@ -39,7 +39,8 @@ export const actions = {
 							id: user.id,
 							username: user.username,
 							email: user.email,
-							role: user.role || 'reader'
+							role: user.role || 'reader',
+							avatar_url: user.avatar_url || ''
 						}
 					: undefined
 			};
