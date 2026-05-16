@@ -12,8 +12,9 @@ export function classNames(...classes: (string | undefined | null | false)[]) {
 export function buildCoverUrl(coverUrl?: string | null, base?: string | null): string | null {
   if (!coverUrl) return null;
   if (coverUrl.startsWith("http")) return coverUrl;
-  if (!base) return coverUrl;
-  return `${base.replace(/\/$/, "")}/${coverUrl.replace(/^\//, "")}`;
+  const coverBase = base || "https://cdn.wign.dev";
+  if (!coverBase) return coverUrl;
+  return `${coverBase.replace(/\/$/, "")}/${coverUrl.replace(/^\//, "")}`;
 }
 
 export function formatCount(n?: number) {
