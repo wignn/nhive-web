@@ -69,6 +69,7 @@
 
     <form 
       method="POST" 
+      action="?/login"
       class="space-y-3"
       use:enhance={() => {
         busy = true;

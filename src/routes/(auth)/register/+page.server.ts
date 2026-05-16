@@ -50,7 +50,7 @@ function setSession(cookies: any, accessToken: string, refreshToken: string | un
 }
 
 export const actions = {
-	default: async ({ request, cookies }) => {
+	register: async ({ request, cookies }) => {
 		const data = await request.formData();
 		const username = data.get('username');
 		const email = data.get('email');

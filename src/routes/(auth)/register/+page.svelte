@@ -100,6 +100,7 @@
 
     <form 
       method="POST" 
+      action="?/register"
       class="space-y-3"
       onsubmit={validate}
       use:enhance={() => {
