@@ -2,6 +2,7 @@ import type { Handle } from '@sveltejs/kit';
 import { gatewayFetch } from '$lib/server/gateway';
 
 function applyCacheHeaders(response: Response, pathname: string): Response {
+	response.headers.set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
 
 	if (pathname.startsWith('/_app/immutable/')) {
 		response.headers.set('cache-control', 'public, max-age=31536000, immutable');

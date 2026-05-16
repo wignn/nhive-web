@@ -90,14 +90,14 @@ export const actions = {
 		throw redirect(303, '/');
 	},
 	google: async ({ request, cookies }) => {
-		const data = await request.formData();
-		const idToken = data.get('credential') || data.get('id_token');
-
-		if (!idToken || typeof idToken !== 'string') {
-			return fail(400, { error: 'Google credential is required' });
-		}
-
 		try {
+			const data = await request.formData();
+			const idToken = data.get('credential') || data.get('id_token');
+
+			if (!idToken || typeof idToken !== 'string') {
+				return fail(400, { error: 'Google credential is required' });
+			}
+
 			const resp = await gatewayFetch('/api/v1/auth/google', {
 				method: 'POST',
 				body: JSON.stringify({ id_token: idToken })
@@ -109,6 +109,7 @@ export const actions = {
 
 			setSession(cookies, accessToken, refreshToken, resp?.user);
 		} catch (err: any) {
+			console.error('[auth/google/register] failed', err);
 			return fail(401, { error: err?.message || 'Google sign in failed' });
 		}
 
