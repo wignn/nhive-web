@@ -5,12 +5,18 @@
   import { toast } from "svelte-sonner";
   import { goto, invalidateAll } from "$app/navigation";
   import { cn } from "$lib/utils";
+  import { onMount } from "svelte";
+  import { env } from "$env/dynamic/public";
 
   let busy = $state(false);
+  let googleBusy = $state(false);
   let username = $state("");
   let email = $state("");
   let password = $state("");
   let confirm = $state("");
+  let googleCredential = $state("");
+  let googleForm: HTMLFormElement | undefined = $state();
+  let googleButton: HTMLDivElement | undefined = $state();
 
   let strength = $derived.by(() => {
     if (!password) return 0;
@@ -37,6 +43,46 @@
     }
     return true;
   }
+
+  onMount(() => {
+    if (!env.PUBLIC_GOOGLE_CLIENT_ID) return;
+
+    const renderGoogle = () => {
+      const google = (window as any).google;
+      if (!google?.accounts?.id || !googleButton) return;
+      google.accounts.id.initialize({
+        client_id: env.PUBLIC_GOOGLE_CLIENT_ID,
+        callback: (response: { credential?: string }) => {
+          if (!response.credential) {
+            toast.error("Google sign in failed");
+            return;
+          }
+          googleCredential = response.credential;
+          googleBusy = true;
+          queueMicrotask(() => googleForm?.requestSubmit());
+        }
+      });
+      google.accounts.id.renderButton(googleButton, {
+        theme: "outline",
+        size: "large",
+        width: Math.min(360, googleButton.clientWidth || 360),
+        text: "signup_with",
+        shape: "rectangular"
+      });
+    };
+
+    if ((window as any).google?.accounts?.id) {
+      renderGoogle();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = renderGoogle;
+    document.head.appendChild(script);
+  });
 </script>
 
 <svelte:head>
@@ -64,7 +110,7 @@
             await invalidateAll();
             goto(result.location);
           } else if (result.type === 'failure') {
-            toast.error(result.data?.error || "Registration failed");
+            toast.error(String(result.data?.error || "Registration failed"));
           }
         };
       }}
@@ -122,6 +168,36 @@
         {/if}
       </button>
     </form>
+
+    {#if env.PUBLIC_GOOGLE_CLIENT_ID}
+      <div class="my-5 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
+        <div class="h-px flex-1 bg-white/10"></div>
+        <span>or</span>
+        <div class="h-px flex-1 bg-white/10"></div>
+      </div>
+
+      <form
+        method="POST"
+        action="?/google"
+        bind:this={googleForm}
+        use:enhance={() => {
+          googleBusy = true;
+          return async ({ result }) => {
+            googleBusy = false;
+            if (result.type === 'redirect') {
+              toast.success("Welcome to NovelHive");
+              await invalidateAll();
+              goto(result.location);
+            } else if (result.type === 'failure') {
+              toast.error(String(result.data?.error || "Google sign in failed"));
+            }
+          };
+        }}
+      >
+        <input type="hidden" name="credential" bind:value={googleCredential} />
+        <div class="min-h-10" class:opacity-60={googleBusy} bind:this={googleButton}></div>
+      </form>
+    {/if}
 
     <p class="mt-6 text-center text-sm text-muted-foreground">
       Already have an account? <a href="/login" class="font-bold gradient-text">Sign in</a>
