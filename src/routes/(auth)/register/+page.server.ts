@@ -1,7 +1,23 @@
 import { fail, redirect } from '@sveltejs/kit';
-import type { Actions } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 import { gatewayFetch } from '$lib/server/gateway';
 import { dev } from '$app/environment';
+import { env } from '$env/dynamic/private';
+
+function googleClientId() {
+	return (
+		env.PUBLIC_GOOGLE_CLIENT_ID ||
+		env.GOOGLE_CLIENT_ID ||
+		env.GOOGLE_CLIENT_IDS?.split(',').map((id) => id.trim()).find(Boolean) ||
+		''
+	);
+}
+
+export const load: PageServerLoad = async () => {
+	return {
+		googleClientId: googleClientId()
+	};
+};
 
 function buildSessionUser(user: any) {
 	return user

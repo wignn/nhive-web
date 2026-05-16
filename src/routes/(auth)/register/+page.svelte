@@ -6,8 +6,8 @@
   import { goto, invalidateAll } from "$app/navigation";
   import { cn } from "$lib/utils";
   import { onMount } from "svelte";
-  import { env } from "$env/dynamic/public";
 
+  let { data } = $props();
   let busy = $state(false);
   let googleBusy = $state(false);
   let username = $state("");
@@ -17,6 +17,7 @@
   let googleCredential = $state("");
   let googleForm: HTMLFormElement | undefined = $state();
   let googleButton: HTMLDivElement | undefined = $state();
+  let googleClientId = $derived(data.googleClientId || "");
 
   let strength = $derived.by(() => {
     if (!password) return 0;
@@ -45,13 +46,13 @@
   }
 
   onMount(() => {
-    if (!env.PUBLIC_GOOGLE_CLIENT_ID) return;
+    if (!googleClientId) return;
 
     const renderGoogle = () => {
       const google = (window as any).google;
       if (!google?.accounts?.id || !googleButton) return;
       google.accounts.id.initialize({
-        client_id: env.PUBLIC_GOOGLE_CLIENT_ID,
+        client_id: googleClientId,
         callback: (response: { credential?: string }) => {
           if (!response.credential) {
             toast.error("Google sign in failed");
@@ -169,7 +170,7 @@
       </button>
     </form>
 
-    {#if env.PUBLIC_GOOGLE_CLIENT_ID}
+    {#if googleClientId}
       <div class="my-5 flex items-center gap-3 text-xs uppercase tracking-wider text-muted-foreground">
         <div class="h-px flex-1 bg-white/10"></div>
         <span>or</span>
